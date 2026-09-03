@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CVT Tuning Bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styleCSS.css">
+</head>
+<body>
+
+<header>
+  <div class="brand">CVT<span>//</span>BENCH</div>
+  <nav>
+    <button data-view="overview" class="active">Overview</button>
+    <button data-view="bench">Bench</button>
+    <button data-view="guide">Guide</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- OVERVIEW -->
+  <section class="view active" id="view-overview">
+    <div class="hero">
+      <div>
+        <p class="eyebrow">Scooter &amp; Motorcycle CVT</p>
+        <h1>Tune your<br><em>variator</em>,<br>not guesswork.</h1>
+        <p class="lede">Feed in your roller weight, center spring, and clutch spring, and the bench tells you what kind of setup you're actually running — balanced, arangkada, top speed, or plain improper.</p>
+        <div class="hero-actions">
+          <button class="btn" data-goto="bench">Open the bench</button>
+          <button class="btn ghost" data-goto="guide">Read the guide</button>
+        </div>
+      </div>
+      <div class="schematic-frame">
+        <svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="400" height="260" fill="none"/>
+          <!-- centerline -->
+          <line x1="20" y1="130" x2="380" y2="130" stroke="var(--line-dim)" stroke-width="1" stroke-dasharray="4 3"/>
+          <!-- fixed face -->
+          <polygon points="90,60 150,90 150,170 90,200" fill="#173B67" stroke="var(--line)" stroke-width="1.4"/>
+          <!-- movable face -->
+          <polygon points="150,90 210,110 210,150 150,170" fill="#1E4A80" stroke="var(--line)" stroke-width="1.4"/>
+          <!-- ramp weight -->
+          <circle cx="178" cy="130" r="12" fill="#0D2A4C" stroke="var(--amber)" stroke-width="2"/>
+          <!-- spring -->
+          <path d="M215,130 L225,118 L235,142 L245,118 L255,142 L265,118 L275,130" fill="none" stroke="var(--line)" stroke-width="1.6"/>
+          <rect x="278" y="112" width="14" height="36" fill="#173B67" stroke="var(--line)" stroke-width="1.2"/>
+          <!-- belt hint -->
+          <path d="M150,90 C 260,60 320,60 340,90" fill="none" stroke="var(--line-dim)" stroke-width="6" stroke-linecap="round"/>
+          <path d="M150,170 C 260,200 320,200 340,170" fill="none" stroke="var(--line-dim)" stroke-width="6" stroke-linecap="round"/>
+
+          <!-- callouts -->
+          <line class="callout-line" x1="115" y1="60" x2="115" y2="30"/>
+          <text class="callout" x="60" y="24">FIXED FACE</text>
+          <line class="callout-line" x1="180" y1="105" x2="180" y2="30"/>
+          <text class="callout" x="150" y="44">MOVABLE FACE</text>
+          <line class="callout-line" x1="178" y1="118" x2="178" y2="215"/>
+          <text class="callout" x="140" y="232">ROLLER WEIGHT</text>
+          <line class="callout-line" x1="245" y1="118" x2="245" y2="215"/>
+          <text class="callout" x="212" y="232">CENTER SPRING</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENCH -->
+  <section class="view" id="view-bench">
+    <div class="bench-grid">
+      <!-- INPUTS -->
+      <div class="controls-column">
+        <div class="panel control-card">
+          <h3><span class="section-number">1.</span> SELECT YOUR SCOOTER</h3>
+          <div class="field">
+            <select id="scooterSelect"></select>
+            <small id="scooterSpecNote">Choose a scooter to load its reference tuning data.</small>
+          </div>
+        </div>
+
+        <div class="panel control-card">
+          <h3><span class="section-number">2.</span> RIDER WEIGHT</h3>
+          <div class="field weight-field">
+            <div class="input-with-unit">
+              <input type="number" id="riderWeight" inputmode="decimal" step="0.1">
+              <span>kg</span>
+            </div>
+            <small>Enter your actual weight.</small>
+          </div>
+        </div>
+
+        <div class="panel control-card">
+          <h3><span class="section-number">3.</span> CVT CONFIGURATION</h3>
+          <div class="two-col" id="cvtConfigRow">
+            <div class="field">
+              <label>CVT BRAND</label>
+              <select id="cvtBrand"></select>
+            </div>
+            <div class="field" id="configField">
+              <label>PULLEY CONFIGURATION</label>
+              <select id="configSelect">
+                <option value="full">Full CVT Set</option>
+                <option value="pulley">Pulley Set Only</option>
+              </select>
+            </div>
+</div>
+          <small class="config-note" id="configNote">Stock/OEM uses the scooter's reference tuning baseline directly — no pulley configuration to choose.</small>
+        </div>
+
+        <div class="panel control-card" id="tryMySetupCard">
+          <h3><span class="section-number">4.</span> SELECT YOUR SETUP</h3>
+          <div class="flyball-pair">
+            <div class="field">
+              <label>FLYBALL 1 <span class="readout">g</span></label>
+              <input type="number" id="flyball1" inputmode="numeric" step="1" min="1">
+            </div>
+            <div class="field">
+              <label>FLYBALL 2 <span class="readout">g</span></label>
+              <input type="number" id="flyball2" inputmode="numeric" step="1" min="1">
+            </div>
+          </div>
+          <div class="flyball-summary">
+            <div class="summary-line"><span>Effective Flyball</span><strong id="effectiveFlyballReadout">—</strong></div>
+            <small>(Flyball 1 + Flyball 2) ÷ 2</small>
+          </div>
+          <div class="two-col" style="margin-top:14px;">
+            <div class="field">
+              <label>CENTER SPRING</label>
+              <select id="centerSpring">
+                <option value="">Select RPM rating</option>
+                <option value="800">800 RPM</option>
+                <option value="1000">1,000 RPM</option>
+                <option value="1200">1,200 RPM</option>
+                <option value="1500">1,500 RPM</option>
+                <option value="1800">1,800 RPM</option>
+                <option value="2000">2,000 RPM</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>CLUTCH SPRING</label>
+              <select id="clutchSpring">
+                <option value="">Select RPM rating</option>
+                <option value="800">800 RPM</option>
+                <option value="1000">1,000 RPM</option>
+                <option value="1200">1,200 RPM</option>
+                <option value="1500">1,500 RPM</option>
+                <option value="1800">1,800 RPM</option>
+                <option value="2000">2,000 RPM</option>
+              </select>
+            </div>
+          </div>
+          <small>These are your setup — the Tuning Results and Performance Analysis below always reflect exactly what's entered here. Change anything and results update automatically.</small>
+        </div>
+
+        <div class="panel control-card goal-card">
+          <h3><span class="section-number">5.</span> RIDING GOAL</h3>
+          <div class="field">
+            <select id="ridingGoal">
+              <option value="">No Specific Goal</option>
+              <option value="strong">Strong Acceleration</option>
+              <option value="balanced">Balanced</option>
+              <option value="topspeed">Higher Top Speed</option>
+              <option value="daily">Daily Riding</option>
+              <option value="race">Racing / Aggressive</option>
+              <option value="efficient">Fuel Efficient</option>
+            </select>
+            <small id="goalAutoNote">Choose a Riding Goal, then click Calculate Setup to automatically calculate Flyball Weight, Center Spring, and Clutch Spring. The controls remain editable for manual tuning.</small>
+          </div>
+          <button class="btn calculate-btn" id="calcBtn" type="button">▣ &nbsp; CALCULATE SETUP</button>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="results-column">
+        <div class="panel results-card">
+          <h3 class="results-title">TUNING RESULTS</h3>
+          <div class="metrics-grid">
+            <div class="metric"><span>ESTIMATED RPM</span><strong id="metricRPM">— <small>RPM</small></strong><em>Operating RPM</em></div>
+            <div class="metric"><span>ACCELERATION</span><strong id="metricAccel">— <small>/ 10</small></strong></div>
+            <div class="metric"><span>TOP SPEED POTENTIAL</span><strong id="metricTop">— <small>/ 10</small></strong></div>
+            <div class="metric"><span>FUEL EFFICIENCY</span><strong id="metricFuel">— <small>/ 10</small></strong></div>
+            <div class="metric"><span>CVT EFFICIENCY</span><strong id="metricCVT">—<small>%</small></strong><em>Power Transfer</em></div>
+          </div>
+
+          <div class="results-main">
+            <div class="gauge-panel">
+              <div class="tach-wrap">
+                <svg viewBox="0 0 260 190" id="tachSvg">
+                  <g id="tachFace"></g>
+                  <polygon id="engageMarker" points="0,0 0,0 0,0" fill="var(--teal)"></polygon>
+                  <polygon id="shiftMarker" points="0,0 0,0 0,0" fill="var(--orange)"></polygon>
+                  <line id="tachNeedle" x1="130" y1="150" x2="130" y2="58" stroke="var(--ink)" stroke-width="3" stroke-linecap="round" style="transform-origin:130px 150px; transform:rotate(-120deg); transition:transform .5s cubic-bezier(.4,1.4,.4,1);"/>
+                  <circle cx="130" cy="150" r="6" fill="var(--amber)"/>
+                </svg>
+                <div class="tach-digital"><span id="tachValue">0</span><span class="tach-unit">RPM</span></div>
+                <div class="gauge-caption">RPM (x1000)</div>
+              </div>
+              <div class="optimal-label">OPTIMAL OPERATING RANGE</div>
+              <div class="optimal-range" id="visibleOpRange">—</div>
+            </div>
+
+            <div class="recommendation-card" id="recommendationCard">
+              <div class="recommendation-title">▮ RECOMMENDED SETUP</div>
+              <div class="recommendation-rows">
+                <div><span>Flyball Setup</span><b id="recFlyball">—</b></div>
+                <div><span>Effective Flyball</span><b id="recEffective">—</b></div>
+                <div><span>Center Spring</span><b id="recCenter">—</b></div>
+                <div><span>Clutch Spring</span><b id="recClutch">—</b></div>
+                <div><span>Pulley Set</span><b id="recPulley">—</b></div>
+                <div><span>Configuration</span><b id="recConfig">—</b></div>
+                <div><span>Reference Operating Range</span><b id="recRange">—</b></div>
+              </div>
+              <div class="why-box visible-why">
+                <div class="why-title">Why this setup?</div>
+                <div class="note" id="recWhy">Select a scooter to generate a technically-calculated recommendation.</div>
+              </div>
+              <div class="why-box visible-why" id="goalFitBox">
+                <div class="why-title">How does this fit my riding goal?</div>
+                <div class="note" id="recGoalFit">Pick a riding goal above to evaluate this setup against it — the goal doesn't change the recommendation itself.</div>
+              </div>
+              <div class="applied-state" id="appliedState">● Calculated automatically — nothing here is written into your inputs</div>
+              <table class="chart compare-mini" id="recCompareTable">
+                <thead><tr><th></th><th>Recommended</th><th>My Setup</th></tr></thead>
+                <tbody>
+                  <tr><td>Operating RPM</td><td id="cmpRecRpm">—</td><td id="cmpMyRpm">—</td></tr>
+                  <tr><td>Acceleration</td><td id="cmpRecAccel">—</td><td id="cmpMyAccel">—</td></tr>
+                  <tr><td>Top Speed</td><td id="cmpRecTop">—</td><td id="cmpMyTop">—</td></tr>
+                  <tr><td>CVT Efficiency</td><td id="cmpRecCvt">—</td><td id="cmpMyCvt">—</td></tr>
+                  <tr><td>Engine Stress</td><td id="cmpRecStress">—</td><td id="cmpMyStress">—</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel performance-card">
+          <h3>PERFORMANCE ANALYSIS</h3>
+          <div class="perf-row"><span>Acceleration</span><div class="seg-meter"><i id="perfAccelFill"></i></div><b id="perfAccel">—</b><small id="perfAccelNote">—</small></div>
+          <div class="perf-row"><span>Top Speed Potential</span><div class="seg-meter"><i id="perfTopFill"></i></div><b id="perfTop">—</b><small id="perfTopNote">—</small></div>
+          <div class="perf-row"><span>Fuel Efficiency</span><div class="seg-meter"><i id="perfFuelFill"></i></div><b id="perfFuel">—</b><small id="perfFuelNote">—</small></div>
+          <div class="perf-row"><span>CVT Efficiency</span><div class="seg-meter"><i id="perfCVTFill"></i></div><b id="perfCVT">—</b><small id="perfCVTNote">—</small></div>
+          <div class="perf-row"><span>Engine Stress</span><div class="seg-meter"><i id="perfStressFill"></i></div><b id="perfStress">—</b><small id="perfStressNote">—</small></div>
+        </div>
+
+        <div class="panel disclaimer-panel">
+          <h3>DISCLAIMER</h3>
+          <p>This calculator provides estimated results based on real-world CVT tuning principles and reference data. Actual performance may vary depending on riding style, road conditions, maintenance, belt condition, and other factors. Always test safely.</p>
+        </div>
+
+        <!-- Compatibility/legacy ticket kept hidden for the existing calculation engine. -->
+        <div class="result-ticket state-idle" id="resultTicket" aria-hidden="true">
+          <div class="verdict" id="verdictText">Awaiting input</div>
+          <div class="note" id="verdictNote">Select a scooter, enter the rider weight, flyballs and springs — results update from the current configuration.</div>
+          <div class="row"><span>SCOOTER</span><span id="rowScooter">—</span></div>
+          <div class="row"><span>CVT BRAND</span><span id="rowCvtBrand">—</span></div>
+          <div class="row"><span>CONFIGURATION</span><span id="rowCvtConfig">—</span></div>
+          <div class="row"><span>PULLEY</span><span id="rowPulley">—</span></div>
+          <div class="row"><span>RIDER</span><span id="rowRider">—</span></div>
+          <div class="row"><span>FLYBALL</span><span id="rowFlyball">—</span></div>
+          <div class="row"><span>EFFECTIVE FLYBALL</span><span id="rowEffective">—</span></div>
+          <div class="row"><span>CENTER</span><span id="rowCenter">—</span></div>
+          <div class="row"><span>CLUTCH</span><span id="rowClutch">—</span></div>
+          <div class="row"><span>CLUTCH ENGAGES AT</span><span id="rowEngage">—</span></div>
+          <div class="row"><span>EST. OPERATING RPM</span><span id="rowShift">—</span></div>
+          <div class="row"><span>RECOMMENDED RANGE</span><span id="rowOpRange">—</span></div>
+          <div class="meter-row"><div class="meter-label"><span>Acceleration</span><span id="accelPct">—</span></div><div class="meter-track"><div class="meter-fill" id="accelFill"></div></div></div>
+          <div class="meter-row"><div class="meter-label"><span>Top speed</span><span id="topPct">—</span></div><div class="meter-track"><div class="meter-fill" id="topFill"></div></div></div>
+          <div class="row"><span>ACCELERATION</span><span id="accelLabel">—</span></div>
+          <div class="row"><span>FUEL EFFICIENCY</span><span id="fuelPct">—</span></div>
+          <div class="row"><span>CVT EFFICIENCY</span><span id="cvtEfficiencyPct">—</span></div>
+          <div class="row"><span>ENGINE STRESS (RELATIVE)</span><span id="stressPct">—</span></div>
+          <div class="row"><span>CVT BEHAVIOR</span><span id="cvtBehaviorText">—</span></div>
+          <div class="note" id="goalFitText">Pick a riding goal above to see how this setup fits it.</div>
+          <div class="why-box" id="whyBox" style="display:none;"><div class="why-title">WHY THIS SETUP?</div><div class="note" id="whyText"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel comparison-panel">
+      <h3>SETUP COMPARISON</h3>
+      <p class="lede">Save the setup you're currently viewing, tweak the flyballs or springs, and save again — compare up to four side by side.</p>
+      <div class="compare-actions"><button class="btn" id="saveSetupBtn">Save current setup</button><button class="btn ghost" id="clearCompareBtn">Clear all</button></div>
+      <p class="compare-empty" id="compareEmpty">No saved setups yet — save one above to start comparing.</p>
+      <table class="chart" id="compareTable"><thead><tr><th>Scooter</th><th>Rider</th><th>Flyball</th><th>Effective</th><th>Est. RPM</th><th>Result</th><th></th></tr></thead><tbody id="compareBody"></tbody></table>
+    </div>
+  </section>
+
+  <!-- GUIDE -->
+  <section class="view" id="view-guide">
+    <p class="eyebrow">Reference</p>
+    <h1 style="font-size:clamp(26px,3.4vw,36px); margin-bottom:6px;">Know the parts</h1>
+    <p class="lede">A short glossary before you start swapping parts on the bench.</p>
+
+    <div class="glossary">
+      <div class="term">
+        <div class="tag">WEIGHT</div>
+        <h4>Roller / Flyweight</h4>
+        <p>Sits in the movable face's ramps. Centrifugal force pushes it outward as RPM climbs, closing the pulley and forcing the belt up — heavier rollers close it sooner, lighter rollers let RPM climb higher first.</p>
+      </div>
+      <div class="term">
+        <div class="tag">SPRING</div>
+        <h4>CENTER SPRING</h4>
+        <p>Pushes back against the rollers, resisting the pulley closing. A stiffer (higher RPM-rated) spring holds the ratio down longer and raises the RPM the engine sits at.</p>
+      </div>
+      <div class="term">
+        <div class="tag">SPRING</div>
+        <h4>CLUTCH SPRING</h4>
+        <p>Controls the RPM at which the clutch shoes engage the bell and the bike starts moving. Higher rating means a later, harder engagement.</p>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--display); text-transform:uppercase; letter-spacing:1px; color:var(--ink-dim); font-weight:600;">Setup reference chart</h3>
+    <table class="chart">
+      <thead>
+        <tr><th>Roller weight</th><th>Center spring</th><th>Clutch spring</th><th>Result</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>13 – 15 g</td><td>800 / 1000 / 1200</td><td>800 / 1000 / 1200</td><td class="tag-balanced">Balanced Performance</td></tr>
+        <tr><td>11 – 13 g</td><td>1000 / 1200 / 1500</td><td>1000 / 1200 / 1500</td><td class="tag-arangkada">Arangkada Performance</td></tr>
+        <tr><td>≥ 15 g</td><td>any</td><td>any</td><td class="tag-top">Top Speed Performance</td></tr>
+        <tr><td>≤ 9 g</td><td>≥ 1500</td><td>≥ 1500</td><td class="tag-bad">Improper Setup</td></tr>
+        <tr><td>anything else</td><td>—</td><td>—</td><td class="tag-bad">Improper Setup</td></tr>
+      </tbody>
+    </table>
+
+    <p class="lede" style="margin-top:24px; max-width:none;"><strong style="color:var(--ink);">"Arangkada"</strong> is Filipino tuner slang for a setup tuned for a hard, fast launch off the line — common on jeepney and scooter tuning culture — as opposed to a setup tuned for a higher top speed.</p>
+
+    <div class="disclaimer">
+      This bench uses deterministic reference calculations for tuning guidance. It doesn't replace a proper road test or dyno run, and real results vary by bike model, belt condition, and riding style. Always test conservatively and re-check after any CVT change.
+    </div>
+  </section>
+
+</main>
+
+<footer>CVT // BENCH — for reference only, not a substitute for a proper tune-up</footer>
+
+<script src="scooterData.js"></script>
+<script src="cvtHardwareData.js"></script>
+<script src="scriptJS.js"></script>
+
+</body>
+</html>
